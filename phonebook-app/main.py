@@ -16,3 +16,6 @@ templates = Jinja2Templates(directory="views/templates")
 @app.get("/")
 def read_root():
     return {"message": "Phone Book Management System is running!"}
+@app.get("/login", response_class=HTMLResponse)
+def show_login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
