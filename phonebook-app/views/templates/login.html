@@ -1,1 +1,21 @@
-
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng Nhập - Phonebook</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="login-box">
+        <h2>Đăng Nhập</h2>
+        <form action="/auth/login" method="post">
+            <input type="text" name="username" placeholder="Tên đăng nhập" required>
+            <input type="password" name="password" placeholder="Mật khẩu" required>
+            <button type="submit">Đăng Nhập</button>
+        </form>
+        <p style="margin-top: 15px; font-size: 14px;">
+            Chưa có tài khoản? <a href="/register">Đăng ký ngay</a>
+        </p>
+    </div>
+</body>
+</html>
