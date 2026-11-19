@@ -13,16 +13,12 @@ init_db()
 app.mount("/static", StaticFiles(directory="views/static"), name="static")
 templates = Jinja2Templates(directory="views/templates")
 
-@app.get("/")
-def read_root():
-    return {"message": "Phone Book Management System is running!"}
-
-# Route cho trang Đăng Nhập 
+# Route cho trang Đăng Nhập
 @app.get("/login", response_class=HTMLResponse)
 def show_login_page(request: Request):
     return templates.TemplateResponse(request=request, name="login.html")
 
-# Route cho trang Đăng Ký 
+# Route cho trang Đăng Ký
 @app.get("/register", response_class=HTMLResponse)
 def show_register_page(request: Request):
     return templates.TemplateResponse(request=request, name="register.html")
@@ -31,3 +27,4 @@ def show_register_page(request: Request):
 @app.get("/", response_class=HTMLResponse)
 def show_home_page(request: Request):
     return templates.TemplateResponse(request=request, name="home.html", context={"contacts": []})
+    
