@@ -1,1 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Trang Chủ - HD Book</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body { display: block; background-color: #f4f6f8; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .btn-add { background: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; }
+        .contact-list { max-width: 800px; margin: 0 auto; }
+        .contact-item { background: white; padding: 15px 20px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .btn-edit { background: #ffc107; color: black; padding: 5px 10px; text-decoration: none; border-radius: 4px; margin-right: 5px; }
+        .btn-del { background: #dc3545; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Danh Bạ Của Tôi</h2>
+        <a href="/contacts/add" class="btn-add">+ Thêm Liên Hệ</a>
+    </div>
 
+    <div class="contact-list">
+        {% for contact in contacts %}
+        <div class="contact-item">
+            <div>
+                <strong>{{ contact.name }}</strong><br>
+                <span style="color: #666; font-size: 14px;">{{ contact.phone }} - {{ contact.email }}</span>
+            </div>
+            <div>
+                <a href="/contacts/edit/{{ contact.id }}" class="btn-edit">Sửa</a>
+                <a href="/contacts/delete/{{ contact.id }}" class="btn-del" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
+            </div>
+        </div>
+        {% endfor %}
+        {% if not contacts %}
+        <p style="text-align: center; color: #666;">Chưa có liên hệ nào. Hãy thêm mới!</p>
+        {% endif %}
+    </div>
+</body>
+</html>
