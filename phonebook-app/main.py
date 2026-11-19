@@ -17,12 +17,12 @@ templates = Jinja2Templates(directory="views/templates")
 def read_root():
     return {"message": "Phone Book Management System is running!"}
 
-# Route cho trang Đăng Nhập
+# Route cho trang Đăng Nhập (Sửa lại cú pháp mới)
 @app.get("/login", response_class=HTMLResponse)
 def show_login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="login.html")
 
-# Route cho trang Đăng Ký
+# Route cho trang Đăng Ký (Sửa lại cú pháp mới)
 @app.get("/register", response_class=HTMLResponse)
 def show_register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="register.html")
