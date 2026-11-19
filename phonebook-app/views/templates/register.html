@@ -1,1 +1,23 @@
 
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng Ký - Phonebook</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="login-box">
+        <h2>Đăng Ký Tài Khoản</h2>
+        <form action="/auth/register" method="post">
+            <input type="text" name="full_name" placeholder="Họ và tên" required>
+            <input type="text" name="username" placeholder="Tên đăng nhập" required>
+            <input type="password" name="password" placeholder="Mật khẩu" required>
+            <button type="submit">Đăng Ký</button>
+        </form>
+        <p style="margin-top: 15px; font-size: 14px;">
+            Đã có tài khoản? <a href="/login">Đăng nhập</a>
+        </p>
+    </div>
+</body>
+</html>
