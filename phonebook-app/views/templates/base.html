@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Book Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+{% if request.session.get("user_id") %}
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom px-4 py-2">
+    <a class="navbar-brand fw-bold fs-4" href="/">CONTACTS</a>
+    <form class="d-flex mx-auto" style="width: 38%;" action="/" method="get">
+        <input class="form-control rounded-pill px-3" type="search" name="q" value="{{ q or '' }}" placeholder="Searching for contacts...">
+    </form>
+    <div class="d-flex align-items-center gap-3">
+        <a href="/export" class="text-white text-decoration-none small fw-semibold">Export CSV</a>
+        <a href="#" class="text-white text-decoration-none small fw-semibold" data-bs-toggle="modal" data-bs-target="#importModal">Import CSV</a>
+        <a href="/groups" class="text-white text-decoration-none small fw-semibold">Group Management</a>
+        <a href="/blocked" class="text-white text-decoration-none small fw-semibold">Blocked</a>
+        {% if request.session.get("role") == "Admin" %}
+        <a href="/admin/users" class="text-warning text-decoration-none small fw-bold">Admin</a>
+        {% endif %}
+        <a href="/profile" class="text-white text-decoration-none small fw-semibold">User ({{ request.session.get("user_name") }})</a>
+        <a href="/logout" class="btn btn-sm btn-outline-light">Log out</a>
+    </div>
+</nav>
+
+<!-- Import CSV Modal -->
+<div class="modal fade" id="importModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form class="modal-content" action="/import" method="post" enctype="multipart/form-data">
+      <div class="modal-header">
+        <h5 class="modal-title">Import Contacts (.csv)</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted">CSV columns: <code>Full Name,Phone Number,Email,Address,Note</code></p>
+        <input type="file" name="file" accept=".csv" class="form-control" required>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Import</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<div class="container mt-4">
+    {% if msg %}
+    <div class="alert alert-success alert-dismissible fade show">{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    {% endif %}
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show">{{ error }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    {% endif %}
+    {% block content %}{% endblock %}
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="fw-bold mb-4">ADMIN – MANAGE USER ACCOUNTS</h3>
+<table class="table table-bordered table-hover">
+    <thead class="table-primary">
+        <tr><th>ID</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+    {% for u in users %}
+        <tr>
+            <td>{{ u.userID }}</td>
+            <td>{{ u.fullName }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.phoneNumber }}</td>
+            <td><span class="badge bg-{{ 'danger' if u.role == 'Admin' else 'secondary' }}">{{ u.role }}</span></td>
+            <td>
+                {% if u.role != 'Admin' %}
+                <form method="post" action="/admin/users/{{ u.userID }}/delete" onsubmit="return confirm('Delete user account {{ u.email }}?');">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+                {% else %}—{% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

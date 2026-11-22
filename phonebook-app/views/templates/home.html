@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-center gap-4 mb-4">
+    <a href="/?q={{ q }}&group_id={{ selected_group or '' }}&sort={{ 'DESC' if sort == 'ASC' else 'ASC' }}"
+       class="btn btn-light border fw-semibold px-4">
+        Sort {{ 'A-Z ↓' if sort == 'ASC' else 'Z-A ↑' }}
+    </a>
+    <form method="get" action="/" class="d-flex align-items-center">
+        <input type="hidden" name="q" value="{{ q }}">
+        <input type="hidden" name="sort" value="{{ sort }}">
+        <select name="group_id" class="form-select fw-semibold bg-light" onchange="this.form.submit()">
+            <option value="">Filter by group (All)</option>
+            {% for g in groups %}
+            <option value="{{ g.groupID }}" {% if selected_group == g.groupID %}selected{% endif %}>
+                {{ g.groupName }} ({{ g.memberCount }})
+            </option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+{% if contacts %}
+<div class="list-group list-group-flush">
+    {% for c in contacts %}
+    <a href="/contacts/{{ c.contactID }}" class="list-group-item list-group-item-action d-flex align-items-center py-3 border-0">
+        <div class="avatar-circle">{{ c.fullName[0]|upper }}</div>
+        <div>
+            <div class="fw-bold text-dark">{{ c.fullName }}</div>
+            <div class="text-muted small">{{ c.primaryPhone }}</div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center text-muted py-5">
+    <h5>No contacts found.</h5>
+    <p>Click the <strong>+</strong> button below to add a new contact.</p>
+</div>
+{% endif %}
+
+<a href="/contacts/add" class="btn btn-primary fab-btn text-decoration-none">+</a>
+{% endblock %}
