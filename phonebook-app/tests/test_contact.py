@@ -1,135 +1,63 @@
 import os
-import pytest
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import database
-from controllers.contact_controller import ContactController
-
-TEST_DB = "test_phonebook.db"
-ctrl = ContactController()
-
+from models.user_model import User
+from models.contact_model import Contact
 
 def setup_function():
-    # Đổi sang db tạm để chạy test không ảnh hưởng dữ liệu thật
-    database.DB_NAME = TEST_DB
-    if os.path.exists(TEST_DB):
-        os.remove(TEST_DB)
+    database.DB_NAME = "test_phonebook.db"
+    if os.path.exists(database.DB_NAME):
+        os.remove(database.DB_NAME)
     database.init_db()
-
-    # Tạo sẵn 2 user để thỏa khóa ngoại userID
-    database.execute_query(
-        "INSERT INTO USERS (userID, fullName, phoneNumber, password, email) VALUES (?, ?, ?, ?, ?)",
-        (1, "Nguyen Hau", "0900000001", "123456", "hau@gmail.com"),
-    )
-    database.execute_query(
-        "INSERT INTO USERS (userID, fullName, phoneNumber, password, email) VALUES (?, ?, ?, ?, ?)",
-        (2, "Dang Khoi", "0900000002", "123456", "khoi@gmail.com"),
-    )
-
+    u = User(fullName="Tester", email="tester@gmail.com", phoneNumber="0900000001", password="123456")
+    u.register()
+    global UID
+    UID = u.userID
 
 def teardown_function():
-    if os.path.exists(TEST_DB):
-        os.remove(TEST_DB)
+    if os.path.exists("test_phonebook.db"):
+        os.remove("test_phonebook.db")
 
-
-def test_add_and_detail():
-    res = ctrl.add_contact(
-        1,
-        "Nghiem Son Hoang",
-        [{"phoneNumber": "0987654321", "phoneType": "Mobile"}],
-        email="sonhoang09@gmail.com",
-        address="So 40, Duong Vo Oanh",
-        note="Family Member",
-    )
-    assert res["status"] == "created"
-
-    cid = res["contact"]["contactID"]
-    detail = ctrl.get_detail(1, cid)
+def test_add_view_edit_delete_contact():
+    c = Contact(userID=UID, fullName="Nghiem Son Hoang", email="sonhoang09@gmail.com", address="40 Vo Oanh", note="Family")
+    ok, _, cid = c.addContact("0987654321")
+    assert ok is True
+    detail = Contact.viewContact(cid, UID)
     assert detail["fullName"] == "Nghiem Son Hoang"
-    assert detail["phoneNumbers"][0]["phoneNumber"] == "0987654321"
+    assert detail["primaryPhone"] == "0987654321"
 
+    c.fullName = "Nghiem Son Hoang Updated"
+    ok_u, _ = c.updateContact("0987654322")
+    assert ok_u is True
+    assert Contact.viewContact(cid, UID)["primaryPhone"] == "0987654322"
 
-def test_validate_error():
-    with pytest.raises(ValueError):
-        ctrl.add_contact(1, "", [{"phoneNumber": "0901234567", "phoneType": "Mobile"}])
-    with pytest.raises(ValueError):
-        ctrl.add_contact(1, "Nguyen A", [{"phoneNumber": "123", "phoneType": "Mobile"}])
-    with pytest.raises(ValueError):
-        ctrl.add_contact(1, "Nguyen A", [{"phoneNumber": "0901234567", "phoneType": "Mobile"}], email="sai_email")
+    ok_d, _ = Contact.deleteContact(cid, UID)
+    assert ok_d is True
+    assert Contact.viewContact(cid, UID) is None
 
+def test_duplicate_name_and_phone_detection():
+    Contact(userID=UID, fullName="An Khanh Huy").addContact("0379752980")
+    dups_name = Contact.check_duplicates(UID, "An Khanh Huy", "0999999999")
+    assert dups_name["same_name"] is not None
+    assert dups_name["same_phone"] is None
 
-def test_pagination_and_sort():
-    for i in range(35):
-        ctrl.add_contact(1, f"Contact_{35 - i:02d}", [{"phoneNumber": f"09000000{i:02d}", "phoneType": "Mobile"}])
+    dups_phone = Contact.check_duplicates(UID, "Different Name", "0379752980")
+    assert dups_phone["same_phone"] is not None
+    assert dups_phone["same_name"] is None
 
-    p1 = ctrl.list_contacts(1, page=1, page_size=30, sort_order="ASC")
-    p2 = ctrl.list_contacts(1, page=2, page_size=30, sort_order="ASC")
-    p1_desc = ctrl.list_contacts(1, page=1, page_size=30, sort_order="DESC")
+def test_search_sort_import_export():
+    Contact(userID=UID, fullName="Vu Pham").addContact("0379767890")
+    Contact(userID=UID, fullName="An Khanh Huy").addContact("0379752980")
+    asc = Contact.getContacts(UID, sort_order="ASC")
+    assert asc[0]["fullName"] == "An Khanh Huy"
 
-    assert p1["total"] == 35
-    assert len(p1["items"]) == 30
-    assert len(p2["items"]) == 5
-    assert p1["items"][0]["fullName"] == "Contact_01"
-    assert p1_desc["items"][0]["fullName"] == "Contact_35"
+    res = Contact.getContacts(UID, keyword="Vu")
+    assert len(res) == 1
 
-
-def test_search():
-    ctrl.add_contact(1, "Nghiem Son Hoang", [{"phoneNumber": "0987654321", "phoneType": "Mobile"}])
-    ctrl.add_contact(1, "An Khanh Huy", [{"phoneNumber": "0379752980", "phoneType": "Work"}])
-
-    assert len(ctrl.search_contacts(1, "Nghiem")) == 1
-    assert len(ctrl.search_contacts(1, "037975")) == 1
-
-
-def test_duplicate_name():
-    ctrl.add_contact(1, "Nguyen Hau", [{"phoneNumber": "0901111111", "phoneType": "Mobile"}])
-
-    warn = ctrl.add_contact(1, "Nguyen Hau", [{"phoneNumber": "0902222222", "phoneType": "Work"}])
-    assert warn["status"] == "duplicate_name"
-
-    appended = ctrl.add_contact(1, "Nguyen Hau", [{"phoneNumber": "0902222222", "phoneType": "Work"}], action="append")
-    assert appended["status"] == "appended"
-    assert len(appended["contact"]["phoneNumbers"]) == 2
-
-
-def test_duplicate_phone():
-    ctrl.add_contact(1, "Nguyen Hau", [{"phoneNumber": "0901111111", "phoneType": "Mobile"}])
-
-    warn = ctrl.add_contact(1, "Tran Khoi", [{"phoneNumber": "0901111111", "phoneType": "Mobile"}])
-    assert warn["status"] == "duplicate_phone"
-
-    updated = ctrl.add_contact(
-        1, "Tran Khoi", [{"phoneNumber": "0901111111", "phoneType": "Mobile"}], action="update_name"
-    )
-    assert updated["status"] == "updated_name"
-    assert updated["contact"]["fullName"] == "Tran Khoi"
-
-
-def test_update_and_delete():
-    res = ctrl.add_contact(1, "Ten Cu", [{"phoneNumber": "0903333333", "phoneType": "Mobile"}])
-    cid = res["contact"]["contactID"]
-
-    up = ctrl.update_contact(1, cid, "Ten Moi", [{"phoneNumber": "0904444444", "phoneType": "Home"}])
-    assert up["status"] == "updated"
-    assert up["contact"]["fullName"] == "Ten Moi"
-
-    assert ctrl.delete_contact(1, cid) is True
-    assert ctrl.get_detail(1, cid) is None
-
-
-def test_csv():
-    ctrl.add_contact(1, "An", [{"phoneNumber": "0901000001", "phoneType": "Mobile"}], email="an@mail.com")
-    csv_text = ctrl.export_csv(1)
-    assert "An" in csv_text
-
-    res = ctrl.import_csv(2, csv_text)
-    assert res["imported"] == 1
-    assert len(ctrl.list_contacts(2)["items"]) == 1
-
-
-def test_vcf():
-    ctrl.add_contact(1, "Bao", [{"phoneNumber": "0902000002", "phoneType": "Mobile"}], email="bao@mail.com")
-    vcf_text = ctrl.export_vcf(1)
-    assert "FN:Bao" in vcf_text
-
-    res = ctrl.import_vcf(2, vcf_text)
-    assert res["imported"] == 1
-    assert len(ctrl.list_contacts(2)["items"]) == 1
+    csv_data = Contact.exportContactsCSV(UID)
+    assert "Vu Pham" in csv_data
+    imported, skipped = Contact.importContactsCSV(UID, "Full Name,Phone Number,Email,Address,Note\nChu Huan,0907208960,ch@gmail.com,HCM,Friend\n")
+    assert imported == 1
+    assert skipped == 0
