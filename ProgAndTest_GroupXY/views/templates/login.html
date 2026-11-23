@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="pink-card">
+    <h2 class="text-center fw-bold text-decoration-underline mb-4">Log in</h2>
+    <form method="post" action="/login">
+        <div class="mb-3">
+            <label class="form-label fw-bold">Email</label>
+            <input type="email" name="email" class="form-control" required placeholder="student01@gmail.com">
+        </div>
+        <div class="mb-4">
+            <label class="form-label fw-bold">Password</label>
+            <input type="password" name="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Log in</button>
+    </form>
+    <div class="d-flex justify-content-between mt-3">
+        <a href="/reset-password" class="text-dark fw-semibold text-decoration-underline">Forgot Password</a>
+        <a href="/register" class="text-primary fw-semibold text-decoration-underline">Register</a>
+    </div>
+</div>
+{% endblock %}

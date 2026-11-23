@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 650px; margin: 0 auto;">
+    <h3 class="text-center fw-bold mb-4">BLOCKED CONTACTS</h3>
+    {% for c in blocked %}
+    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+        <div>
+            <div class="fw-bold">{{ c.fullName }}</div>
+            <div class="text-muted small">{{ c.primaryPhone }}</div>
+        </div>
+        <form method="post" action="/contacts/{{ c.contactID }}/unblock" onsubmit="return confirm('Unblock this contact?');">
+            <button type="submit" class="btn btn-sm btn-outline-success fw-bold">Unblock</button>
+        </form>
+    </div>
+    {% else %}
+    <p class="text-center text-muted">No blocked contacts.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,21 +1,16 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
 from database import init_db
+from controllers import auth_controller, contact_controller, group_controller
 
 app = FastAPI(title="Phone Book Management System")
+app.add_middleware(SessionMiddleware, secret_key="phonebook-super-secret-key")
 
-# Khởi tạo 5 bảng CSDL ngay khi chạy app
 init_db()
 
-# Kết nối thư mục giao diện cho TV5
 app.mount("/static", StaticFiles(directory="views/static"), name="static")
-templates = Jinja2Templates(directory="views/templates")
 
-
-@app.get("/")
-def read_root():
-    return {"message": "Phone Book Management System is running!"}
-@app.get("/login", response_class=HTMLResponse)
-def show_login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+app.include_router(auth_controller.router)
+app.include_router(contact_controller.router)
+app.include_router(group_controller.router)
